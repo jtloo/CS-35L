@@ -1,0 +1,16 @@
+#!/bin/bash
+
+one=$1
+two=$2
+
+if [ "$one" -gt "$two" ]; then
+	echo "No.1 > No.2"
+fi
+
+if [ "$one" -lt "$two" ]; then
+	echo "No.1 < No.2"
+fi
+
+if [ "$one" -eq "$two" ]; then
+	echo No.1 = No.2
+fi

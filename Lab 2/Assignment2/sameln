@@ -1,0 +1,54 @@
+#!/bin/bash
+
+dir=$1
+RESULT=`ls -a $dir | sort` #Sorts all the files inside the directory into RESULT
+
+IFS_OLD=$IFS #Makes it so the Array is read correctly
+IFS=$'\n'
+
+declare -a ARRAY
+
+pos=0
+for FILE in $RESULT #Placing the files from the directory into an array
+do
+    if [ ! -r "$dir/$FILE" ] #Checks to make sure the file exists or is readable
+	then
+	echo "$dir/$FILE is not readable or does not exist."
+    elif [ -f "$dir/$FILE" ] #Checks to see that the file 
+	                     #is a regular file and not a directory or link
+	then
+	ARRAY[pos]="$dir/$FILE"
+	pos=$((pos+1))
+    fi #If the file is not a regular file, it is ignored
+done
+
+for j in "${ARRAY[@]}"
+do
+    for k in "${ARRAY[@]}"
+    do
+	if [ "$j" != "$k" ] #Check if they are the same filename
+	    then
+	    INODE_j=`stat -c %i "$j"` #Getting inode for both files to see if
+	    INODE_k=`stat -c %i "$k"` #they are already hardlinked to each other
+
+	    if [ $INODE_j != $INODE_k ] #Makes sure they are not hardlinked already
+		then
+		cmp -s "$j" "$k" #Check if they are duplicate files
+		isDuplicate=$? #Gets the Exit Code of the cmp command
+		if [ $isDuplicate -eq 0 ] #The files are duplicates
+		    then
+		    ln -f "$j" "$k" #Using -f allows the ln command to 
+		                    #overwrite the file $k to create the hard link
+		elif [ $isDuplicate -eq 1 ] #The files are different
+		    then
+		    continue #Don't do anything
+		elif [ $isDuplicate -ge 2 ] #Error running the cmp command
+		    then
+		    echo "Error in comparing $j and $k"
+		fi
+	    fi
+	fi
+    done
+done
+
+IFS=$IFS_OLD 

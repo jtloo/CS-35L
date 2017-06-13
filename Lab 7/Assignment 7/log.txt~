@@ -1,0 +1,82 @@
+Justin Loo
+204 600 399
+
+Partner: Comran Morshed
+
+First, I checked to make sure that openssh-server and openssh-client
+was installed. To do this, I used the command:
+
+dpkg —-get-selections | grep openssh
+
+This returned:
+openssh-client	install
+
+Thus, to install openssh-server, I used:
+sudo apt-get update
+sudo apt-get install openssh-server
+
+Now using
+dpkg —-get-selections | grep openssh
+
+returns
+openssh-client		install
+openssh-server			install
+openssh-sftp-server		install
+
+Being the Client:
+To generate my public and private keys, I used:
+ssh-keygen
+
+This prompted me to enter a file in which to save the key in
+/home/ubuntu/.ssh/id_rsa. I named the file authorized_key.
+The passphrase was Aloha.
+
+After, it outputted your identification has been saved in
+authorized_key and the public key is saved in authorized_key.pub.
+I then copied my public key to the server using:
+ssh-copy-id -i authorized_key justin@10.97.85.72
+
+I forgot to initially put the file name and it did not work.
+I then put:
+ssh-add authorized_key
+to add my private key to the authentication agent, so I will not
+have to type in my password.
+
+Now I can log in without a password using
+ssh justin@10.97.85.97
+
+I also used:
+ssh -X justin@10.97.85.97
+
+and I was able to open FireFox.
+
+Being the Host:
+I created the account using 
+sudo useradd -d /home/comran -m comran
+sudo passwd comran
+
+The password was 1234.
+
+I created the .ssh directory by:
+cd /home/comran
+sudo mkdir .ssh
+
+I changed the ownership and permission for it
+sudo chown -R Yanick .ssh
+sudo chmod 700 .ssh
+
+I then disabled password-based authentication by
+emacs /etc/ssh/sshd_config
+
+However, I needed to install it first.
+sudo apt-get install emacs
+
+When I opened it, I could not edit the file, so I tried
+sudo emacs /etc/ssh/sshd_config
+
+and it worked.
+
+To give Comran his IP Address, I used the command
+hostname -I
+
+which output: 10.97.85.46

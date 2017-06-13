@@ -1,0 +1,152 @@
+Justin Loo
+204 600 399
+
+In this Lab, I had to create 2 implementations of the tr command
+in Linux with two inputs from and to. One implementation had to 
+use getchar and putchar for the input and output. The other had 
+to use read and write.
+
+Both implementations had the same error checking. First, I checked
+if from and to were the same length, and if they were not, the
+program reported an error. Then, the program checked if from had
+duplicate bits. For example, if from , then the program
+would report an error. This is due to the character a having more
+than one mapping in to.
+
+1. tr2b.c
+To transliterate the bytes passed in, I ran an endless loop using
+while(1) which uses getchar() to read in a character and stores 
+it into an int variable named readChar. Initially, I had used a 
+char variable, but when testing it on the randomly generated 
+5,000,000 byte file, described below, the program would 
+incorrectly read EOF. I looked that getchar() was a type 
+int, so I made readChar an int variable, and the program 
+worked correctly. It would only stop if readChar = EOF 
+or if there was an error reading the input. After reading 
+in a character, there is a for loop that runs 
+from x = 0 to x is less than the length of from. If 
+readChar is the same as a character in from, then readChar
+is set to a character in to that is at the same position as the
+one in from. At the end of the loop, readChar is passed into
+the putchar() function.
+
+2. tr2u.c
+For this program, I used the read and write functions rather
+than getchar() and putchar(). To use the read function, I
+first created a buffer using char array of size 1 and named 
+readChar. The read function returns 0 if it reads EOF or -1
+if there is an error reading in the input, so I created
+a variable shouldContinue that stored the return value. It was
+of type ssize_t because that is the type of the read function.
+I am running an endless while loop, so if shouldContinue is
+0 or -1 it breaks the loop.To use the read function, 
+I used read(0,readChar,1). The first argument 0 is the file 
+descriptor and tells read to look at stdin. The second is 
+the buffer that I created, and the third
+is the number of bytes to read, which is 1. If it read in a
+valid input, I used the same for loop as in the tr2b.c program
+that checks to see if the input matches a char in from. The last
+part of the loop is the write function. To use it, I used
+write(1,readChar,1). The first argument 1 tells write to write
+the char to stdout. The second is the buffer to write from, and
+the third is number of bytes to read which is 1.
+
+3. Testing the programs using strace
+To test the programs, I created a file that was at least
+5,000,000 bytes. To do this, I used
+head --bytes=5000000 /dev/urandom > output.txt
+
+First, I wanted to make sure that each program produced the
+same output, so I ran
+./tr2b "?\37" "ABCD" < output.txt > tr2bBigOutput.txt 
+./tr2u "?\37" "ABCD" < output.txt > tr2uBigOutput.txt 
+diff tr2bBigOutput.txt tr2uBigOutput.txt
+
+diff did not report any differences, so the programs
+were correct.
+
+I than ran the strace command on both programs
+to see the number of system calls each had.
+First, for copying a file to another, and then copying
+a file to the terminal
+
+For tr2b, I used the following code to copy a file to another.
+
+strace -o tr2bTofile ./tr2b "?\37" "ABCD" < output.txt > tr2bBigOutput.txt
+
+the strace output is written to tr2bTofile, and when I opened it, 
+it had asystem call at each line. To count it, I used:
+
+cat tr2bTofile | wc -l
+
+The output of it was 184, so s how many system calls there
+were.
+
+For tr2u, I did the same thing as above
+strace -o tr2uTofile ./tr2u "?\37" "ABCD" < output.txt > tr2uBigOutput.txt
+cat tr2uTofile | wc -l
+
+This output 10000026. This is significantly more system calls than
+the tr2b function.
+
+I then used the strace command for copying to the terminal.
+The code used is similar to the ones above, but I removed 
+the writing to file.
+strace -o tr2bTofile ./tr2b "?\37" "ABCD" < output.txt
+cat tr2bTofile | wc -l
+
+For this, there were 19858 system calls. This is because tr2b
+now has to print the chars onto the screen, using more system
+calls.
+
+For tr2u,
+strace -o tr2uTofile ./tr2u "?\37" "ABCD" < output.txt
+cat tr2uTofile | wc -l
+
+This output 10000026. This is the same as for copying to
+another file. This could be due to it just having to call
+the write function to either write to the file or to the
+terminal.
+
+4. Using the time command
+Copying to another file:
+time ./tr2b "?\37" "ABCD" < output.txt > tr2bBigOutput.txt
+
+real 0m0.343s
+user 0m0.200s
+sys  0m0.008s
+
+time ./tr2u "?\37" "ABCD" < output.txt > tr2uBigOutput.txt 
+
+real 0m5.323s
+user 0m0.297s
+sys  0m4.947s
+
+There is a significant time difference between tr2b and tr2u.
+tr2u could be a lot slower since from the strace command, 
+it has significantly more system calls.
+
+Copying to terminal:
+time ./tr2b "?\37" "ABCD" < output.txt
+
+real 0m0.869s
+user 0m0.420s
+sys  0m0.126s
+
+time ./tr2u "?\37" "ABCD" < output.txt
+
+real 0m7.133s
+user 0m0.289s
+sys  0m6.838s
+
+Both the tr2b and tr2u programs ran slower when copying
+to the terminal. The tr2b program run time doubled. This
+could be due to when copying to the terminal, tr2b had
+about 19000 more system calls due to having to write
+to the terminal. This increase could explain the longer
+time. The tr2u time increased despite the same number of
+system calls. This could be due to there being some sort
+of delay when writing to the terminal. In any case, the
+tr2b command is faster due to it using the buffered input
+and output (getchar() and putchar() respectively). It has
+less system calls in both cases.

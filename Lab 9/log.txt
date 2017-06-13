@@ -1,0 +1,260 @@
+Justin Loo
+204 600 399
+
+First, I created a directory for all of the Assignment 9 files using
+mkdir Assignment9
+cd Assignment9
+
+Step 1.
+I created a directory gitroot using:
+mkdir gitroot
+
+I then got a copy of the Diffutils repository by using the git clone 
+command instructions from the Savannah site:
+cd gitroot
+git clone https://git.savannah.gnu.org/git/diffutils.git
+
+Step 2:
+To get a log of the changes saved into a file named git-log.txt
+I used:
+cd diffutils
+git log > git-log.txt
+
+The cd command was necessary because without it, the git log command
+output:
+fatal: Not a git repository (or any parent up to mount point /w/home.07)
+
+Step 3:
+To get a list of tags, I used the command
+git tag > git-tags.txt
+
+Step 4:
+To find the commit entitled “maint: quote 'like this' or "like this", 
+not `like this’”, I used the command
+git log --grep='maint: quote'
+git show 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f > quote-patch.txt
+
+The --grep command shows the name of the command 
+62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f.This was then put into 
+git show to create a patch file.
+
+Step 5:
+To check out version 3.0, I used
+git checkout v3.0 -b lab9Branch
+
+Step 6:
+To patch the version 3.0, I used:
+patch -p1 < quote-patch.txt
+
+When the command was not sure which file to patch, I just hit return 
+to skip it. This was the only problem I ran into.
+
+Step 7:
+To check if everything was applied correctly, I used:
+git status
+
+It outputted:
+# On branch lab9Branch
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   NEWS
+#	modified:   README
+#	modified:   TODO
+#	modified:   doc/diagmeet.note
+#	modified:   ms/config.bat
+#	modified:   ms/config.site
+#	modified:   po/en.po
+#	modified:   src/analyze.c
+#	modified:   src/cmp.c
+#	modified:   src/context.c
+#	modified:   src/diff.c
+#	modified:   src/diff.h
+#	modified:   src/diff3.c
+#	modified:   src/dir.c
+#	modified:   src/ifdef.c
+#	modified:   src/io.c
+#	modified:   src/sdiff.c
+#	modified:   src/side.c
+#	modified:   src/system.h
+#	modified:   src/util.c
+#	modified:   tests/help-version
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	NEWS.orig
+#	README-hacking.orig
+#	README-hacking.rej
+#	README.orig
+#	README.rej
+#	cfg.mk.orig
+#	cfg.mk.rej
+#	git-log.txt
+#	git-tags.txt
+#	ms/config.site.orig
+#	quote-patch.txt
+#	src/cmp.c.orig
+#	src/context.c.orig
+#	src/diff.c.orig
+#	src/diff.c.rej
+#	src/diff.h.orig
+#	src/diff3.c.orig
+#	src/diff3.c.rej
+#	src/dir.c.orig
+#	src/sdiff.c.orig
+#	src/system.h.orig
+#	src/util.c.orig
+#	tests/help-version.orig
+no changes added to commit (use "git add" and/or "git commit -a")
+
+The patched files were only changed on my branch and not for the entire
+repository. They were not committed yet.
+
+Also, there were files that were not .c files that were changed
+as well.
+
+Step 8 and 9:
+For the non .c files, I reverted the change back by using the 
+vc-revert command (C-x v u). The files I reverted were:
+NEWS
+README
+TODO
+doc/diagmeet.note
+ms/config.bat
+ms/config.site
+po/en.po
+src/diff.h
+src/system.h
+tests/help-version
+
+I then changed the .c files by reverting all the changes to the code
+and character string constants. Anything hunks that were just comments
+were reverted. This was done using diff-apply-hunk command (C-c C-a).
+Since the hunks were already applied, the command just asked if I
+wanted to revert them. I did by hitting y. The files I checked were:
+src/analyze.c
+src/cmp.c
+src/context.c
+src/diff.c
+src/diff3.c
+src/dir.c
+src/ifdef.c
+src/io.c
+src/sdiff.c
+src/side.c
+src/util.c
+
+Step 10:
+I opened up the .c.rej files in emacs and used C-x 4 f to open the
+corresponding .c file in another window. I copied the rejected
+patches into the .c file. I did this for:
+src/diff.c.rej
+src/diff3.c.rej
+
+diff.c.rej had 5 rejected changes and diff3.c.rej had 1. All the
+changes had to do with changing ` to '.
+
+Step 11:
+To remove the untracked files, I first checked which files would
+be deleted using:
+git clean -f -n
+git status
+
+I then checked that the output of git clean -n were the files in
+the untracked section of git status. I saw that the git-log.txt, 
+git-tags.txt, and quote-patch.txt were going to be deleted, so I
+moved them to the Assignment9 directory that will hold all the files
+to turn in. After, I deleted all the untracked files using:
+git clean -f
+
+to remove them. This output:
+Removing NEWS.orig
+Removing README-hacking.orig
+Removing README-hacking.rej
+Removing README.orig
+Removing README.rej
+Removing cfg.mk.orig
+Removing cfg.mk.rej
+Removing git-log.txt
+Removing git-tags.txt
+Removing ms/config.site.orig
+Removing quote-patch.txt
+Removing src/cmp.c.orig
+Removing src/context.c.orig
+Removing src/diff.c.orig
+Removing src/diff.c.rej
+Removing src/diff.h.orig
+Removing src/diff3.c.orig
+Removing src/diff3.c.rej
+Removing src/dir.c.orig
+Removing src/sdiff.c.orig
+Removing src/system.h.orig
+Removing src/util.c.orig
+Removing tests/help-version.orig
+
+Step 12:
+I used git status and this output 6 lines:
+#	modified:   src/cmp.c
+#	modified:   src/diff.c
+#	modified:   src/diff3.c
+#	modified:   src/dir.c
+#	modified:   src/sdiff.c
+#	modified:   src/util.c
+
+I then used the command:
+git diff > quote-3.0-patch.txt
+
+to create a patch file. I ran the wc -l command on it
+and it outputted 348 lines.
+
+Step 13:
+I checked my GNU C Library version using:
+ldd —version
+
+and saw I was on version 2.12 which does not require the
+extra patch. I then followed the commands from README-hacking.
+
+First, I used:
+export PATH=/usr/local/cs/bin:$PATH
+
+Without doing that, ./bootstrap would fail saying hang2man
+was not found. With this done I used the commands:
+./bootstrap
+./configure
+make
+make check
+
+To verify that Diffutils does the right thing, I ran:
+diff . -
+diff --help
+
+The error message was: cannot compare '-' to a directory.
+This is correct since it outputted '-' rather than `-'.
+
+Step 14:
+For a sanity check, I compared the source code of my modified 
+Diffutils v3.0 to the source code of the unmodified version.
+The commands I used were:
+cd ..      (This is to get into gitroot directory)
+cp -r diffutils diffutils-3.0-patch
+git clone https://git.savannah.gnu.org/git/diffutils.git ./diffutils-3.0
+cd diffutils-3.0
+git checkout v3.0 -b lab9
+cd ..
+
+Now that I am back in the gitroot directory, I ran the diff command from my
+modified Diffutils directory.
+./diffutils-3.0-patch/src/diff -pru diffutils-3.0 diffutils-3.0-patch > quote-3.0-test.txt
+
+I then ran:
+diff quote-3.0-patch.txt quote-3.0-test.txt > patch.diff
+cat patch.diff
+
+I saw that the files were not identical. There were many changes from ` to ‘.
+These occurred in comment sections as well as in the actual code. Thus, the
+changes were not innocuous. 
+
+
+

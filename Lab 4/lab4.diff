@@ -1,0 +1,22 @@
+*Fixed the overflow issue of timespec_cmp by using if statements 
+*and conditionals to avoid overflow
+==============================================================
+--- lib/timespec-bug.h	2017-04-27 20:37:36.290449000 -0700
++++ lib/timespec.h	2017-04-27 21:41:24.877280000 -0700
+@@ -45,8 +45,14 @@
+ static inline int
+ timespec_cmp (struct timespec a, struct timespec b)
+ {
+-  int diff = a.tv_sec - b.tv_sec;
+-  return diff ? diff : a.tv_nsec - b.tv_nsec;
++  int diff = 0;
++  if (a.tv_sec > b.tv_sec)
++    diff = 1; //If a > b, list a first
++  else if (a.tv_sec < b.tv_sec)
++    diff = -1; //If a < b, list b first
++  else //Same time
++    diff = 0;
++  return diff;
+ }
+ 
+ # if ! HAVE_DECL_NANOSLEEP

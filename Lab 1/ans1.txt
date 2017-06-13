@@ -1,0 +1,93 @@
+Justin Loo
+204600399
+CS 35L Lab 6
+
+Laboratory 1: Linux and Emacs Scavenger Hunt
+
+1. You type in man -k followed by the word that that you want to search for. 
+For example, if you want to find list you would do man -k list.
+I got this answer by first using the hint of typing in man man, then 
+
+2. The cp command is located at /bin/cp and 
+the wc command is located at /usr/bin/wc
+These were found using the hint which. I used man which to find out 
+how to use the command and saw the example section where is says to 
+put which followed by the command you want to search for.
+
+3. Using the hint of the find command and using man find to 
+figure out how to use it, I used the command find /usr/bin -name ‘?’
+to find the executable programs with names that are one character
+long. I then used man followed by the program name to
+figure out what they do.
+Programs:
+w - shows the users who are currently logged on and what they are doing
+[ - There is no man entry of this.
+X - It is a network transparent window system which runs on a wide 
+    range of computing and graphics machines.
+
+4. When executing the command named by the symbolic link /usr/bin/emacs,
+the file that is actually executed is /etc/alternatives/emacs. 
+This was found using the command readlink /usr/bin/emacs
+
+5. The symbolic mode g+s means that the other users in the file’s 
+group can set user or group ID on execution.
+o-x means that other users not in the file’s group
+no longer can execute the file. This was found using man chmod.
+
+6. To find a file that was modified three weeks ago, use the 
+command find -mtime -21. This was found using the man page for find.
+
+7. To find a directory that was modified three weeks 
+ago, use the command find -mtime -21 -type d.
+
+8. To find the number of symbolic links I used find /usr/bin -type l | wc -l
+354 symbolic links
+
+9. To find the oldest regular file, use the command 
+find /usr/lib/ -type f -printf "\n%TD %p" | sort -k1.7nr  -k1.8nr -k1.1nr -k1
+The oldest regular file is: 
+/usr/lib/x86_64-redhat-linux5E/include/bits/stdio-lock.h
+
+10. Using the man locale command, the locale command gets its data from the
+LC_* environment variables. These variables are created by localedef.
+
+11. To find the commands with sort in their name, I used C-h a sort
+Buffer-menu-sort
+Buffer-menu-sort-by-column
+ibuffer-invert-sorting
+ibuffer-toggle-sorting-mode
+rmail-sort-by-author
+rmail-sort-by-correspondent
+rmail-sort-by-date
+rmail-sort-by-labels
+rmail-sort-by-lines
+rmail-sort-by-recipient
+rmail-sort-by-subject
+sort-columns
+sort-fields
+sort-lines
+sort-numeric-fields
+sort-pages
+sort-paragraphs
+sort-regexp-fields
+
+12. C-M-a It moves the cursor to the start of the function.
+C-M-b It moves the cursor backwards over a sexp.
+C-M-c It exits a recursive edit.
+C-M-d It moves the cursor down a list structure.
+C-M-e It moves the cursor to the end of the function.
+C-M-f It moves the cursor forwards over a sexp.
+C-M-g It is like C-g. It quits the current command.
+C-M-h It marks the function.
+
+13. C-g aborts the partially typed or executing command.
+
+14. The Emacs function yank reinserts the last stretch of killed text.
+
+15. The difference between the output of the ls -l command 
+and the directory listing the dired command is that the dired command 
+lists all the files in the directory, including those files that 
+have . at the beginning of their name. The output of ls -l does not show
+the files whose names have . at the beginning. Also, the dired 
+output has total used in directory written at the top 
+while the ls -l output does not.

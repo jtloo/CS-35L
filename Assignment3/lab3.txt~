@@ -1,0 +1,4 @@
+To download Coreutils, I used the command:
+wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz
+
+I unzipped it by using the command:

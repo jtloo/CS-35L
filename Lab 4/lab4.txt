@@ -1,0 +1,211 @@
+Justin Loo
+204 600 399
+
+I downloaded the coreutils-with-bug file using:
+wget http://web.cs.ucla.edu/classes/spring17/cs35L/assign/coreutils-with-bug.tar.gz
+
+Installing Coreutils without the patch:
+To decompress the tar file I used:
+tar -xzvf coreutils-with-bug.tar.gz 
+ 
+To install it, I ran:
+cd ./coreutils-with-bug
+./configure
+make 
+
+When running this command the following error came up:
+In file included from utimecmp.c:41:
+utimens.h:2: error: conflicting types for 'futimens'
+/usr/include/sys/stat.h:374: note: previous declaration of 'futimens' was here
+make[3]: *** [utimecmp.o] Error 1
+make[3]: Leaving directory `/w/home.07/ee/ugrad/loo/Assignment4/coreutils-with-bug/lib'
+make[2]: *** [all] Error 2
+make[2]: Leaving directory `/w/home.07/ee/ugrad/loo/Assignment4/coreutils-with-bug/lib'
+make[1]: *** [all-recursive] Error 1
+make[1]: Leaving directory `/w/home.07/ee/ugrad/loo/Assignment4/coreutils-with-bug'
+make: *** [all] Error 2
+
+This was due to the program having differing data types of futimens. 
+
+Applying the patch:
+To patch it, I downloaded the patch file into the coreutils-with-bug
+directory using:
+wget http://web.cs.ucla.edu/classes/spring17/cs35L/assign/coreutils.diff
+
+To apply the patch, I ran the command:
+patch -p0 < coreutils.diff
+
+This output:
+patching file lib/utimens.c
+patching file lib/utimens.h
+patching file src/copy.c
+patching file src/tee.c
+patching file src/touch.c
+
+After running the make command again, there were no errors.
+This was due to the patch renaming futimens to coreutils_futimens.
+This ensured that there were no more multiple data types of futimens
+in the program. Also, the patch also renamed tee to coreutils_tee. This
+could also be to prevent a data type conflict. Since the make command had
+exited, it may not have reached the error involving tee.
+
+Reproducing the Problem:
+To reproduce the problem I ran the code provided on the website:
+tmp=$(mktemp -d)
+cd $tmp
+touch -d '1918-11-11 11:00 GMT' wwi-armistice
+touch now
+sleep 1
+touch now1
+TZ=UTC0 ~/Assignment4/coreutils-with-bug/src/ls -lt --full-time wwi-armistice now now1
+-rw-r--r-- 1 loo eeugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 loo eeugrad 0 2017-04-26 23:44:11.021474729 +0000 now1
+-rw-r--r-- 1 loo eeugrad 0 2017-04-26 23:43:20.481551191 +0000 now
+cd
+rm -fr $tmp
+
+I initially tried just the ls command, but it was running the default ls command.
+To run the buggy ls command, I ran the ls program at 
+~/Assignment4/coreutils-with-bug/src/ls. The output of the command listed the oldest file
+at the top when it should be at the bottom.
+
+Debugging:
+To figure out the source of the error, I ran the gdb debugger using the
+command:
+gdb ~/Assignment4/coreutils-with-bug/src/ls
+
+To find the relevant functions, I ran:
+info functions
+
+I saw from this that a relevant function was sort_files since the problem was the wrong
+sorting of the files. I set a breakpoint:
+break sort_files
+
+After, I ran the command with the arguments
+run -lt --full-time wwi-armistice now now1
+
+I then proceeded to use s (step) and n (next line in stack frame) to navigate
+the function until something relevant to sorting the files popped up.
+I reached a switch statement with a case time_mtime. The function pointer func
+was set to 
+func = sort_reverse ? rev_cmp_mtime : compare_mtime
+
+There were names, so I set breakpoints at these 3 functions. However, sort_reverse
+was not a function, so I didn’t set a breakpoint for it. I did for the other 2.
+break rev_cmp_mtime
+break compare_mtime
+
+I then kept inputting n until I reached the function call to compare_mtime.
+2884   static int compare_mtime (V a, V b) { return cmp_mtime (a, b, xstrcoll); }
+(gdb) list
+2879  {
+2880    int diff = timespec_cmp (get_stat_mtime (&b->stat),
+2881	    	      get_stat_mtime (&a->stat));
+2882		        return diff ? diff : cmp (a->name, b->name);
+2883			}
+
+I saw that there was function cmp_mtime called, so I used:
+si
+
+to step into that function. I then used 
+list
+
+and I saw that timespec_cmp was the function called inside timespec.h.
+45  static inline int
+46  timespec_cmp (struct timespec a, struct timespec b)
+47  {
+48    int diff = a.tv_sec - b.tv_sec;
+49      return diff ? diff : a.tv_nsec - b.tv_nsec;
+50	}
+
+There is a variable diff that is the difference 
+between a.tv_sec and b.tv_sec. Due to this, there might be
+overflow if the difference between the numbers is big enough.
+To fix this I changed the timespec.h file.
+
+Patching timespec.h:
+However, first I had to make a copy of the original by:
+find -name timespec.h     This was to find where it was
+cd ./lib
+cp timespec.h timespec-bug.h
+emacs timespec.h
+
+I changed the timespec_cmp function to use if statements that return
+1, -1, or 0 rather than a single difference of two numbers. In this
+way, overflow can be avoided. To keep the encoding the same,
+I made
+a > b —> diff =  1
+a < b —> diff = -1
+a == b -> diff = 0
+
+To create the diff file, initially tried to use the command:
+diff -u timespec-bug.h timespec.h > ../lab4.diff (Don’t use).
+
+However, the diff file did not  specify the directory of 
+timespec.h, so I then went into the coreutils-with-bug directory and ran:
+diff -u lib/timespec-bug.h lib/timespec.h > lab4.diff
+This gave the directory for the timespec.h.
+
+I could not patch this coreutils since I had already changed 
+the timespec.h. I then created a new version of coreutils-with-bug
+and renamed the old
+coreutils-with-bug to coreutils-with-bug-original.
+mv coreutils-with-bug coreutils-with-bug-original
+tar -xzvf coreutils-with-bug.tar.gz
+cd ./coreutils-with-bug
+wget http://web.cs.ucla.edu/classes/spring17/cs35L/assign/coreutils.diff
+patch -p0 < coreutils.diff 
+
+which output:
+patching file lib/utimens.c
+patching file lib/utimens.h
+patching file src/copy.c
+patching file src/tee.c
+patching file src/touch.c
+
+I then ran:
+cp ../coreutils-with-bug-original/lab4.diff lab4.diff
+patch -p0 < lab4.diff 
+this output:
+patching file lib/timespec.h
+./configure
+make
+
+I then tried to recreate the ls error using same commands as
+before. The command:
+TZ=UTC0 ~/Assignment4/coreutils-with-bug/src/ls -lt --full-time wwi-armistice now now1
+
+output:
+-rw-r--r-- 1 loo eeugrad 0 2017-04-28 04:19:02.539528286 +0000 now1
+-rw-r--r-- 1 loo eeugrad 0 2017-04-28 04:19:00.600455191 +0000 now
+-rw-r--r-- 1 loo eeugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+
+This is the correct output as using the SEASnet ls command.
+
+Creating Error in my Home Directory:
+mkdir tmpLab4
+cd ./tmpLab4
+touch -d '1918-11-11 11:00 GMT' wwi-armistice
+touch now
+sleep 1
+touch now1
+TZ=UTC0 ls -lt --full-time wwi-armistice now now1
+
+This output:
+-rw-r--r-- 1 loo eeugrad 0 2054-12-17 17:28:16.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 loo eeugrad 0 2017-04-28 04:58:24.531965000 +0000 now1
+-rw-r--r-- 1 loo eeugrad 0 2017-04-28 04:58:15.037131000 +0000 now
+
+The wwi-armistice file is shown to have been created in 2054
+by the SEASnet ls command. This is due to the Linux local 
+file system using signed 32-bit time stamps while the
+SEASnet NFS filesystem uses 32-bit unsigned time stamps. 
+The timestamps are the number seconds since the 
+Unix Epoch (Jan 1, 1970). Since the local file system on 
+Linux uses signed 32-bits, the time is correct. The unsigned 32-bits
+of the SEASnet NFS filesystem makes it so that the MSB in the 
+timestamps will always be read as positive, so it will 
+interpret the time as a greater number than it really is.
+
+
+

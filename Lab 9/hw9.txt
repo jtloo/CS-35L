@@ -1,0 +1,130 @@
+Justin Loo
+204 600 399
+
+Step 2:
+cd diffutilsHW
+git checkout v3.0 -b quote
+
+Step 3:
+To install my patch file quote-3.0-patch.txt I used
+patch -p1 < ../../quote-3.0-patch.txt 
+
+I saved the patch file in the directory Assignment9 that houses
+all the Assignment 9 items.
+
+This output:
+patching file src/cmp.c
+patching file src/diff.c
+patching file src/diff3.c
+patching file src/dir.c
+patching file src/sdiff.c
+patching file src/util.c
+
+Step 4 and 5:
+I opened Emacs and used
+C-x 4 a 
+to create a ChangeLog. The text of the ChangeLog is seen below.
+
+2017-06-01  Justin Tyler Loo  <loo@lnxsrv05.seas.ucla.edu>
+
+        * src/cmp.c: Replaced the ` character with '
+        * src/diff.c: Replaced the ` character with '
+        * src/diff3.c: Replaced the ` character with '
+        * src/dir.c: Replaced the ` character with '
+        * src/sdiff.c: Replaced	the ` character	with '
+        * src/util.c: Replaced the ` character with '
+
+Step 6:
+To commit my changes and ChangeLog to the new branch, I used
+git add .
+git commit -F ChangeLog
+
+To check that everything worked, I used:
+git log
+
+This output:
+commit 6977ef2809fba91f1d3d385c5e6319a9544ef3b3
+Author: Justin Tyler Loo <loo@lnxsrv05.seas.ucla.edu>
+Date:   Thu Jun 1 14:19:24 2017 -0700
+
+    2017-06-01  Justin Tyler Loo  <loo@lnxsrv05.seas.ucla.edu>
+    
+        * src/cmp.c: Replaced the ` character with '
+        * src/diff.c: Replaced the ` character with '
+        * src/diff3.c: Replaced the ` character with '
+        * src/dir.c: Replaced the ` character with '
+        * src/sdiff.c: Replaced the ` character with '
+        * src/util.c: Replaced the ` character with '
+
+Step 7:
+To generate a patch file, I used
+git format-patch -1 --stdout > formatted-patch.txt
+
+The -1 is so that only my commit is used in the patch file.
+
+Step 8:
+My partner is Comran Morshed. To verify his patch, I first checked
+out v3.0 of Diffutils into a branch named partner.
+git checkout v3.0 -b partner
+
+I then copied his formatted patch file into my Assignment9 directory
+I created to house all the Assignment 9 files. 
+I ran:
+git am < ../../Comran-formatted-patch.txt
+
+which output
+Applying: 2017-06-03 Comran Anthony Morshed <comran@lnxsrv07.seas.ucla.edu>
+
+I then built the program using:
+export PATH=/usr/local/cs/bin:$PATH
+./bootstrap
+./configure
+make
+make clean
+
+To test to make sure it worked, I ran
+./src/diff -
+
+and the error message was
+./src/diff: missing operand after '-'
+
+which is correct.
+
+Step 9:
+To check if my ChangeLog entry worked, I ran
+git checkout quote
+make distdir
+cd diffutils*
+
+The cd command took me to the diffutils-3.0.1-6e14 directory.
+I then opened the ChangeLog using:
+emacs ChangeLog
+
+I looked at the ChangeLog and the first entry was:
+2017-06-01  Justin Tyler Loo  <loo@lnxsrv05.seas.ucla.edu>
+
+        2017-06-01  Justin Tyler Loo  <loo@lnxsrv05.seas.ucla.edu>
+                * src/cmp.c: Replaced the ` character with '
+                * src/diff.c: Replaced the ` character with '
+                * src/diff3.c: Replaced the ` character with '
+                * src/dir.c: Replaced the ` character with '
+                * src/sdiff.c: Replaced the ` character with '
+                * src/util.c: Replaced the ` character with '
+
+This was what I used for my ChangeLog when committing.
+
+Step 10:
+I ran 
+export PATH=/usr/local/cs/bin:$PATH
+cd ~eggert/src/gnu/emacs
+gitk
+
+I ran into the error 
+Application initialization failed: no display name and no $DISPLAY environment variable
+Error in startup script: no display name and no $DISPLAY environment variable
+    while executing
+"load /usr/lib64/tk8.5/../libtk8.5.so Tk"
+    ("package ifneeded Tk 8.5.7" script)
+    invoked from within
+"package require Tk"
+    (file "/usr/local/cs/bin/gitk" line 10)

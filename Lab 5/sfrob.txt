@@ -1,0 +1,111 @@
+Justin Loo
+204 600 399
+
+For this homework, I rewrote the sfrob program using
+system calls to read and write. The new program sfrobu
+is unbuffered input and output. I also wrote the sfrobu
+as a shell script, sfrobs, using the Linux 
+tr and sort commands.
+The test file I used for the time command is a text file 
+input.txt that had the same text as the 
+test case for homework 4.
+*~BO *{_CIA *hXE]D *LER #@_GZY #E\\OX #^BO #FKPS #NEM\4
+I just put each item on its own line. In total, there were
+9 lines. I then used the hwords file from Assignment 
+2, which had 222 lines. I then tested it using the words 
+file from Assignment 2. This had 479829 lines.
+
+Estimated number of comparisons for sfrob and sfrobu.
+Both of these use qsort, which has a time complexity
+of O(nlogn). The output of nlogn is the estimated
+number of comparisons, where n is the number of lines.
+
+# Lines	  	       #Comparisons
+9 		       29
+222			1731
+479829				9055411
+
+sfrobs uses the Linux sort command which is mergesort.
+It has the same time complexity as quicksort, so the
+estimated number of comparisons is the same.
+
+input.txt (9 lines) performance:
+The performance for sfrob
+time ./sfrob < input.txt > out1.txt
+real 0m0.003s
+user 0m0.000s
+sys  0m0.001s
+
+The performance for sfrobu 
+time ./sfrobu < input.txt > out2.txt
+real 0m0.004s
+user 0m0.001s
+sys  0m0.000s
+
+The performance for sfrobs
+time ./sfrobs < input.txt > out3.txt
+real 0m0.009s
+user 0m0.003s
+sys  0m0.004s
+
+Due to the few amounts of lines, the difference in run times
+were very small. The slight difference between sfrob and sfrobu
+could be due to the buffered input and output and the
+smaller number of system calls of sfrob. The difference between
+sfrob and sfrobs could be the difference in speed between
+qsort and mergesort.
+
+hwords (222 lines) performance:
+sfrob
+time ./sfrob < hwords > out1.txt
+real 0m0.006s
+user 0m0.000s
+sys  0m0.002s
+
+sfrobu
+time ./sfrobu < hwords > out2.txt
+real 0m0.007s
+user 0m0.001s
+sys  0m0.002s
+
+sfrobs
+time ./sfrobs < hwords > out3.txt
+real 0m0.012s
+user 0m0.004s
+sys  0m0.003s
+
+There was still not that big of a time difference between
+all the programs. However, sfrob was still faster than 
+sfrobu and sfrobs. sfrob is faster than sfrobu since
+it uses a buffered input and output and has less system
+calls. s interesting that sfrobs is the slowest of the
+3, but that could be due to speed differences between
+qsort and the mergesort that the sort Linux command uses. 
+
+words (479829 lines) performance:
+sfrob
+time ./sfrob < words > out1.txt
+real 0m0.279s
+user 0m0.205s
+sys  0m0.011s
+
+sfrobu
+time ./sfrobu < words > out2.txt
+real 0m1.645s
+user 0m0.268s
+sys  0m1.309s
+
+sfrobs
+time ./sfrobs < words > out3.txt
+real 0m0.107s
+user 0m0.019s
+sys  0m0.025s
+
+Now, sfrobs was the fastest and sfrobu was
+the slowest. The speed of sfrobs over sfrob could be
+due to the sfrobs unfrobnicating the input all at once
+then sorting rather than sfrob going through a while loop
+and unfrobnicating 1 bit at a time through each iteration.
+sfrobu is again the slowest due to it having an unbuffered
+input and output and more system calls.
+

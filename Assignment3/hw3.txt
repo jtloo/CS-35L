@@ -1,0 +1,27 @@
+1. Brady's patch removed the line "case_long_iso_time_style:" because
+it was listed twice, one after the other. It was unecessary to that
+because he also deleted the line "goto case_long_iso_time_style". This
+prevents it from being called, so even if "case_long_iso_time_style:"
+was not deleted, it would not be called.
+
+2. The patch may cause problems in countries that don't speak English or
+don't understand English-format dates because the patch specifically
+changes the date format to the English format. This would cause people
+from those countries to not be able to understand it. This would also
+adversely affect other programs that use a different date format. Those
+programs would not be able to interpret the patch's date format.
+
+3. When running the randline.py script on the empty file /dev/null/ ,
+it outputted IndexError: list index out of range. This error is due to
+the script trying to access an index of an empty list. Any attempt to access
+any part of that list would fail because it does not exist.
+
+4. When running randline.py using python3, this was outputted
+except IOError as (errno, strerror):
+       	       	  ^
+SyntaxError: invalid syntax
+This is due to python3 having a different error syntax than
+python2. It should be except IOError as err. The change in syntax
+is due to python2 having automatic tuple unpacking and python3 having
+tuple parameter unpacking.
+

@@ -1,0 +1,66 @@
+
+INSTALLING COREUTILS:
+To download Coreutils, I used the command:
+wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz
+
+I unzipped it by using the command:
+tar -xzvf coreutils-7.6.tar.gz
+
+Installing Coreutils:
+I first went into the new coreutils-7.6 directory using
+cd ./coreutils-7.6 . I then used cat INSTALL to read the installation
+directions for it. I also used mkdir coreutilsInstall to make a directory
+in my home directory in which I could install Coreutils in.
+Looking inside the INSTALL file I found that to install the program into
+the coreutilsInstall directory I had to use the command
+./configure --prefix=/u/ee/ugrad/loo/coreutilsInstall/
+The prefix flag was necessary because the default installat
+I then ran the make command to compile it and then make install
+to install it.
+
+Reproducing the Bug:
+I first checked to the locale of the system to ensure that the
+locale was en_US.UTF-8, and the locale command showed me that
+it was. To reproduce the bug, I first used the default ls command
+in Linux. This was wrong though because Linux used the ls command
+that was located in /bin/ls. To use the Coreutils version, I first
+tried to use ./ls , but there was no ls file in the base directory
+of coreutilsInstall. Thus, I ran find -name ls to find the ls file.
+It was in the bin folder so I used : cd ./bin. Then, I was able to 
+run the ./ls -l command to reproduce the error.
+
+Creating the Patch:
+I created a file called patch_file and copied the patch into it. I
+first tried patch -p0 < patch_file , but I realized there was not
+a directory named a inside the coreulis-7.6 directory. I realized
+I needed to make the pnum be p1 to get rid of the a before the / in
+a/src/ls.c and the b in b/src/ls.c. The code now is
+patch -p1 < patch_file
+I then ran the make command to recompile the ls.c file.
+
+Testing the Fix:
+I used this file lab3.txt to test the fix on a recently modified file.
+For the modified ls command I went into the directory
+/u/ee/ugrad/loo/coreutils-7.6/src and ran the command
+./ls -l ~/Assignment3/lab3.txt
+This gave the same output had I run the default Linux
+ls command.
+-rw-r--r-- 1 loo eeugrad 1814 Apr 18 15:31 /u/ee/ugrad/loo/Assignment3/lab3.txt
+
+For the unmodified ls command, I went into the directory where
+I installed Coreutils and where the ls command was located:
+/u/ee/ugrad/loo/coreutilsInstall/bin
+I again ran the command: ./ls -l ~/Assignment3/lab3.txt
+This output:
+-rw-r--r-- 1 loo eeugrad 1814 2017-04-18 15:31 /u/ee/ugrad/loo/Assignment3/lab3.txt
+The formatting of the date is wrong.
+
+To test the two ls files on a file that is at least 1 year old, I
+created a file using: touch –t 201401210959.30 test_file 
+The modified ls file output:
+-rw-r--r-- 1 loo eeugrad 0 Apr 18 15:40 /u/ee/ugrad/loo/Assignment3/test_file
+which matches the default ls output.
+The unmodified ls file output:
+-rw-r--r-- 1 loo eeugrad 0 2017-04-18 15:40 /u/ee/ugrad/loo/Assignment3/test_file
+which does not match.
+

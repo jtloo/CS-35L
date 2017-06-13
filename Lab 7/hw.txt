@@ -1,0 +1,44 @@
+Justin Loo
+204 600 399
+
+1. If other teams had been observing all the bytes going across the network,
+our network would have still been secure. This is because the data would have
+been encrypted using the public and private key pairs. Without these, the other
+teams would just see the encrypted bytes and could not do anything with them. The
+only way to decrypt the data is to use the private key, which is only stored in the
+client’s system. So, unless the other teams had already gained access into the client’s
+system and accessed the private key and its password, the network will be secure.
+
+The system would for the most part still be secure if the other teams had tapped our
+keyboards and recorded all of our keystrokes. This is because we disabled password
+authentication and are using the public/private key pairs to authenticate users when
+they ssh into the host system. In this way, no keystrokes are used to actually authenticate the clients. However, had they tapped our keyboards during the initial creation of the keys, they could have seen the password for the private keys of the
+clients. This would have led to the breakdown in security of our network. All they would
+need now is the private key of the users. Since there is no more password authentication,
+it does not matter if they recorded the keystrokes of the users passwords.
+
+My answer of the network would still be secure would not change if we booted off USB and the other teams had physical control of the USB. Even though they would have access to 
+.ssh folder where the keys are stored, we put passwords on the private key. They would
+need to know the password in order to access it. However, if they were able to get the
+password, then nothing would be able to stop them from using the keys to encrypt and
+decrypt the data on the network.
+
+A combination of the recording of our keystrokes and having physical control of the
+USB would lead to increase chance of our network security being breached. They keystrokes
+would allow the other teams to get our passwords and the USB would allow them to 
+access our private and public keys. With those security measures bypassed, the other
+teams would then have an open door into our network.
+
+2. The gpg --verify command doesn’t really verify that I personally created the
+tar file in question because all it does is check the integrity of  the digital 
+signature to ensure that the data was not changed during transmission. This means that the
+public key and the digital signature matched up. The public key would be able to decrypt the data that I had encrypted using my private key. However, had someone else gained
+access to my private and public keys, they would be able to use the public key to decrypt the data, change it, and use the private key encrypt it. Thus, when the
+gpg --verify command is run, it will not detect anything wrong despite the fact that the
+new tar file is not created by me. 
+
+To fix this, in addition to the gpg --verify command, I could also use some type of
+software that is able to check the origin of the file. For example, it could check
+that the person who created the file is the only person who modified it. The developers
+of the software would have to be trusted though in order to ensure that the results
+that they find are true.

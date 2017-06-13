@@ -1,0 +1,99 @@
+Justin Loo
+204 600 399
+
+Creating the 10,000,000 random number file:
+To create the file I ran the command:
+od -An -tf -N 80000000 /dev/urandom | sed 's/^ *//g' | tr -s " " "\n" > random.txt
+ 
+Explanation:
+od -An -tf -N 80000000 /dev/urandom |
+
+The —N option tells the program to only read
+10,000,000 numbers. I first thought I needed to put
+10,000,000, but the number of lines was 1,250,000
+This was found using: wc -l < random.txt
+I kept trying different values to get the right number of
+lines. I tried 100,000,000 which gave 12,500,000. 
+lines which was too big, so I went down in increments
+of 10,000,000. So, I tried 90,000,000 which 
+gave 11,250,000 lines. This differed from the 100,000,000
+output by 1,250,000 lines, so the next input of 80,000,000
+should produce the right value. Finally, after inputting 
+80,000,000 I got 10,000,000 lines.
+
+The -An option from the man page removes the line 
+numbers from the output. The -tf specifies that the output should be a 
+single-precision floating point number
+
+sed 's/^ *//g' |
+
+This got rid of the spaces between where the address was
+and the first number on each line.
+
+tr -s " " "\n" > random.txt
+
+This changed any white space character into a new line.
+The -s option tells the program to treat continuous 
+space characters as one.
+
+Timing sort:
+To make sure I had the newest version of sort, I used the command
+export PATH=/usr/local/cs/bin:$PATH
+
+I then checked the sort version using:
+sort —version
+
+This outputted:
+sort (GNU coreutils) 8.27
+Copyright (C) 2017 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Mike Haertel and Paul Eggert.
+
+Since it was last updated in 2017, this version of sort will work
+with parallel option.
+
+1 Thread
+time -p sort -g random.txt > /dev/null
+
+real 35.68
+user 193.71
+sys 0.53
+
+2 Threads
+time -p sort -g --parallel=2 random.txt > /dev/null
+real 98.02
+user 187.86
+sys 0.29
+
+4 Threads
+time -p sort -g --parallel=4 random.txt > /dev/null
+real 54.28
+user 185.61
+sys 0.43
+
+8 Threads
+time -p sort -g --parallel=8 random.txt > /dev/null
+real 34.68
+user 193.46
+sys 0.53
+
+As stated in the lab slides the sort program without the 
+parallel argument is 1 thread. Thus, it was unexpected 
+that it ran faster than the sort commands with parallel 
+arguments of 2 and 4. The results for the 2, 4, and 8 
+thread options were expected. Increasing the amount of 
+threads, decreased the time for the program to complete. 
+For the single thread sort, there may have been some 
+sort of optimization that made the program run faster, 
+but it also could have some type of multithreaded parts 
+incorporated into it as well. However, the “single” threaded 
+sort and the 8 thread sort have very similar runtimes. 
+In this case, it would be best to use the “single” threaded 
+sort since it has similar performance without having 
+to type in --parallel=8. 
+
+gunzip <srt.tgz | tar xf - (cd srt && make clean check) 2>&1 | diff -u - make-log.txt awk '200 < length' log.txt readme.txt
+

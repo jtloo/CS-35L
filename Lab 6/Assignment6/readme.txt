@@ -1,0 +1,92 @@
+Justin Loo
+204 600 399
+
+To parallelize the program, I took all the scene calculations from the
+main function and put it into a void pointer function named 
+renderImage which took in an argument of void *threadNum. I 
+casted this to an int* to tell the function which thread the 
+function is to use. This function divided the picture into 
+nthread width columns. After a thread finished its first column, 
+if there was more columns after nthreads (ex. there are 5 columns 
+but 4 threads), a thread that when incremented by nthreads and is 
+still within the width of the scene will complete another column. 
+For example, if there are 4 threads and 5 columns, thread 1 will 
+be incremented by 4 and then work on column 5.
+
+In the main function, I ran a for loop which created the threads 
+using pthread_create. I created a an array named threads of type 
+pthread_t with nthread elements. This is used for the tid argument. 
+I also created an int pointer named threadNum with allocated memory 
+of the size of an int times nthreads. This keeps track of what thread 
+renderImage will use. So, for pthread_create, the arguments I passed 
+in, in order, was the address of the threads array at the position 
+current thread to create, NULL, renderImage, and the thread position. 
+The NULL argument is for default thread attributes. I then ran another 
+for loop after with pthread_join to make sure each thread completes 
+before going on with the program. 
+
+I initially thought to access the variables outside of the main 
+function, I could make a struct with all the variables in it, but 
+I realized that I also needed to keep track of which thread I was 
+using and pass that also into the function. however, I could not 
+keep changing the variable inside the struct that would keep track 
+of the thread that I was using in fear of messing up the results 
+of other threads. So, I decided to use global variables for nthreads, 
+scene_t scene, and float scaled_color. I passed in the thread number 
+as the argument for pthread_create. This way I could access all the 
+relevant data easily. When creating the global variables, I tried
+putting them at the top, but I used the width and height values
+that were defined later on in the function. Thus, I needed to declare
+the global variables after them.
+
+For the scaled_color, I created a 3D array of [width][height][3]. 
+The width and height is so that I could divide the scene into 
+nthreads width columns. The 3 is leftover from the original code 
+which made the scaled_color array have 3 items. I ran into trouble 
+with the scaled_color because whenever I used it in the for loops, 
+I forgot to add in the scaled_color[px][py][3]. I needed this 
+since now it was a 3D array. I kept running into errors until I changed it.
+
+For the Makefile, I ran into problems incorporating the -lpthread flag. 
+I initially deleted the -lm flag and replaced it with -lpthread. I 
+ran into errors where there were undefined references to mathematical 
+functions such as ’sqrt’, ‘fmax’, ‘pow’, and etc. I put the -lm back 
+into the Makefile and it ran correctly.
+
+The following are time results when the program ran with 1, 2, 4, 
+and 8 threads.
+
+time ./srt 1-test.ppm >1-test.ppm.tmp
+
+real	0m48.181s
+user	0m48.181s
+sys	0m0.005s
+
+time ./srt 2-test.ppm >2-test.ppm.tmp
+
+real	0m24.267s
+user	0m48.469s
+sys	0m0.004s
+
+time ./srt 4-test.ppm >4-test.ppm.tmp
+
+real	0m12.240s
+user	0m48.394s
+sys	0m0.002s
+
+time ./srt 8-test.ppm >8-test.ppm.tmp
+
+real	0m6.760s
+user	0m51.130s
+sys	0m0.004s
+
+With multithreading, the performance improves dramatically. With 
+each increasing thread, the program completes faster. As expected 
+the order from fastest to slowest is 8, 4, 2, and 1. This was expected. 
+These were for the real time. The user and sys time stayed the same 
+since its the time the CPU is used by the processes. This appeared 
+the stay the same no matter the amount of the threads. The only big 
+change for these was the increase in user time for 8 threads. This 
+could be due to the CPU having to spend more time initializing the 
+greater amount of cores. In all, increasing the amount of cores, 
+decreased the real runtime.

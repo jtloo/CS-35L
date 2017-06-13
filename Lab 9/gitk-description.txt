@@ -1,0 +1,12 @@
+Justin Loo
+204 600 399
+
+The upper left sub-window shows the branches, merges, and commits of the repository. Also, it shows the most recent commits at the top. It is kind of like a log of all the changes made. Also, it shows the master branch of the repository.
+
+The upper middle sub-window shows the names and emails of the user who corresponds to the entry in the upper left sub-window.
+
+The upper right sub-window shows the corresponding date to the entries in the upper left sub-window.
+
+The bottom left sub-window shows something similar to the patch file generated using git format-patch command. It shows the ChangeLog as well as all the diff output between the two old file and the patched file.
+
+The bottom right sub-window shows the files that had been changed for the commit.

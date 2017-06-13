@@ -1,0 +1,10 @@
+#!/bin/bash
+
+five=`cmp -s hwords words`
+
+if ! cmp -s hwords words
+then
+	echo "wrong"
+fi
+
+echo $five
